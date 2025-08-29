@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useEffect, useState, useContext } from "react";
 import CourseCard from "../compoments/CourseCard";
+import { getCourses } from "../api/api";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export function HomePageLightInitial({ courses, onViewCourse }) {
   const safeCourses = Array.isArray(courses) ? courses : [];
@@ -209,13 +212,41 @@ function CourseGrid({ courses = [], onViewCourse }) {
   );
 }
 
-export default function HomePage({ courses, onViewCourse }) {
-  const safeCourses = Array.isArray(courses) ? courses : [];
+export default function HomePage() {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
+    fetchCourses();
+    // eslint-disable-next-line
+  }, [user]);
+
+  const fetchCourses = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await getCourses();
+      if (res.success) {
+        setCourses(res.data);
+      } else {
+        setError(res.message || "Failed to fetch courses");
+      }
+    } catch (err) {
+      setError("Failed to fetch courses");
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-amber-50 to-sky-50 p-6 font-sans relative text-slate-900">
       <BackgroundDecoration />
-
       <div className="relative z-10 max-w-7xl mx-auto">
         <header className="text-center mb-12">
           <div className="inline-block p-6 rounded-2xl bg-white border border-slate-200 shadow-sm mb-6">
@@ -227,14 +258,12 @@ export default function HomePage({ courses, onViewCourse }) {
               today with our expertly crafted curriculum.
             </p>
           </div>
-
           <div className="flex justify-center gap-4 flex-wrap mt-4">
             <Badge label="Expert Instructors" tone="emerald" />
             <Badge label="Interactive Learning" tone="violet" />
             <Badge label="Lifetime Access" tone="sky" />
           </div>
         </header>
-
         <main aria-labelledby="courses-heading">
           <div className="text-center mb-10">
             <h2
@@ -245,9 +274,13 @@ export default function HomePage({ courses, onViewCourse }) {
             </h2>
             <div className="w-20 h-1 bg-gradient-to-r from-amber-400 to-sky-500 mx-auto rounded-full" />
           </div>
-
-          <CourseGrid courses={safeCourses} onViewCourse={onViewCourse} />
-
+          {loading ? (
+            <div className="text-center py-10 text-lg">Loading courses...</div>
+          ) : error ? (
+            <div className="text-center py-10 text-red-500">{error}</div>
+          ) : (
+            <CourseGrid courses={courses} />
+          )}
           <section className="mt-12">
             <div className="rounded-2xl p-6 bg-white border border-slate-100 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
@@ -273,7 +306,6 @@ export default function HomePage({ courses, onViewCourse }) {
             </div>
           </section>
         </main>
-
         <footer className="text-center mt-10 mb-6">
           <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
             <p className="text-slate-600 text-sm">

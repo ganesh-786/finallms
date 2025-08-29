@@ -20,7 +20,7 @@ const Register = () => {
     setLoading(false);
     if (res.success) {
       login(res.data.user, res.data.token);
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } else {
       setError(res.message || "Registration failed");
     }

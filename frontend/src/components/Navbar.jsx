@@ -25,6 +25,9 @@ const Navbar = () => {
             <span className="mr-4 text-gray-700">
               Hello, {user.username} ({user.role})
             </span>
+            <a href="/dashboard" className="text-blue-600 mx-2 hover:underline">
+              Dashboard
+            </a>
             {(user.role === "admin" || user.role === "manager") && (
               <a href="/manage" className="text-blue-600 mx-2 hover:underline">
                 Manage Courses
@@ -32,7 +35,7 @@ const Navbar = () => {
             )}
             <button
               onClick={logout}
-              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 ml-2"
             >
               Logout
             </button>
