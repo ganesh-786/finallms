@@ -1,24 +1,31 @@
 {
-  "name": "testback",
+  "name": "finallms-backend",
   "version": "1.0.0",
   "main": "server.js",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --watch server.js"
+    "start": "node --watch server.js",
+    "dev": "node --watch server.js",
+    "prod": "node server.js"
   },
-  "keywords": [],
+  "keywords": [
+    "lms",
+    "course-management",
+    "authentication"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Learning Management System with Authentication",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
-    "express": "^5.1.0",
+    "express": "^4.19.2",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
-    "morgan": "^1.10.1",
-    "path-to-regexp": "^8.2.0"
+    "morgan": "^1.10.1"
   }
 }
