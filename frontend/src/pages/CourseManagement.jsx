@@ -1,6 +1,14 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { getCourses, createCourse, updateCourse, deleteCourse, addLesson, updateLesson, deleteLesson } from "../api/api";
+import {
+  getCourses,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+  addLesson,
+  updateLesson,
+  deleteLesson,
+} from "../api/api";
 import CourseForm from "../components/CourseForm";
 import LessonForm from "../components/LessonForm";
 import toast from "react-hot-toast";
@@ -67,7 +75,11 @@ const CourseManagement = () => {
   };
 
   const handleDeleteCourse = async (courseId) => {
-    if (!window.confirm("Are you sure you want to delete this course? This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this course? This action cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -99,7 +111,12 @@ const CourseManagement = () => {
 
   const handleUpdateLesson = async (lessonData) => {
     try {
-      const response = await updateLesson(selectedCourseId, editingLesson.id, lessonData, token);
+      const response = await updateLesson(
+        selectedCourseId,
+        editingLesson.id,
+        lessonData,
+        token
+      );
       if (response.success) {
         toast.success("Lesson updated successfully!");
         setShowLessonForm(false);
@@ -152,7 +169,9 @@ const CourseManagement = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Access Denied
+          </h2>
           <p className="text-gray-600 mb-6">
             You need admin or manager privileges to access course management.
           </p>
@@ -167,10 +186,14 @@ const CourseManagement = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Course Management</h1>
-            <p className="text-gray-600 mt-1">Create and manage your courses and lessons</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Course Management
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Create and manage your courses and lessons
+            </p>
           </div>
-          
+
           <button
             onClick={() => openCourseForm()}
             className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2"
@@ -184,7 +207,10 @@ const CourseManagement = () => {
         {loading ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl p-6 shadow-sm animate-pulse">
+              <div
+                key={i}
+                className="bg-white rounded-xl p-6 shadow-sm animate-pulse"
+              >
                 <div className="h-6 bg-gray-200 rounded mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded mb-2"></div>
                 <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -216,14 +242,18 @@ const CourseManagement = () => {
                 key={course._id}
                 course={course}
                 isExpanded={expandedCourse === course._id}
-                onToggleExpand={() => setExpandedCourse(
-                  expandedCourse === course._id ? null : course._id
-                )}
+                onToggleExpand={() =>
+                  setExpandedCourse(
+                    expandedCourse === course._id ? null : course._id
+                  )
+                }
                 onEditCourse={() => openCourseForm(course)}
                 onDeleteCourse={() => handleDeleteCourse(course._id)}
                 onAddLesson={() => openLessonForm(course._id)}
                 onEditLesson={(lesson) => openLessonForm(course._id, lesson)}
-                onDeleteLesson={(lessonId) => handleDeleteLesson(course._id, lessonId)}
+                onDeleteLesson={(lessonId) =>
+                  handleDeleteLesson(course._id, lessonId)
+                }
               />
             ))}
           </div>
@@ -263,10 +293,14 @@ const CourseManagementCard = ({
 }) => {
   const getDifficultyColor = (difficulty) => {
     switch (difficulty?.toLowerCase()) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "beginner":
+        return "bg-green-100 text-green-800";
+      case "intermediate":
+        return "bg-yellow-100 text-yellow-800";
+      case "advanced":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -277,9 +311,15 @@ const CourseManagementCard = ({
         <div className="flex items-start justify-between">
           <div className="flex-grow">
             <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-xl font-semibold text-gray-900">{course.title}</h3>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(course.difficulty)}`}>
-                {course.difficulty || 'Beginner'}
+              <h3 className="text-xl font-semibold text-gray-900">
+                {course.title}
+              </h3>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(
+                  course.difficulty
+                )}`}
+              >
+                {course.difficulty || "Beginner"}
               </span>
               {!course.isPublished && (
                 <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
@@ -287,9 +327,11 @@ const CourseManagementCard = ({
                 </span>
               )}
             </div>
-            
-            <p className="text-gray-600 mb-4 line-clamp-2">{course.description}</p>
-            
+
+            <p className="text-gray-600 mb-4 line-clamp-2">
+              {course.description}
+            </p>
+
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <div className="flex items-center gap-1">
                 <BookOpen className="w-4 h-4" />
@@ -362,7 +404,9 @@ const CourseManagementCard = ({
           ) : (
             <div className="text-center py-8">
               <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 mb-4">No lessons in this course yet.</p>
+              <p className="text-gray-500 mb-4">
+                No lessons in this course yet.
+              </p>
               <button
                 onClick={onAddLesson}
                 className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
@@ -392,16 +436,12 @@ const LessonManagementCard = ({ lesson, index, onEdit, onDelete }) => (
               {lesson.duration}m
             </span>
           )}
-          {lesson.subjectCategory && (
-            <span>{lesson.subjectCategory}</span>
-          )}
-          {lesson.topics && (
-            <span>{lesson.topics.length} topics</span>
-          )}
+          {lesson.subjectCategory && <span>{lesson.subjectCategory}</span>}
+          {lesson.topics && <span>{lesson.topics.length} topics</span>}
         </div>
       </div>
     </div>
-    
+
     <div className="flex items-center gap-2">
       <button
         onClick={onEdit}

@@ -17,7 +17,7 @@ const CourseForm = ({ course, onSave, onCancel }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.title.trim()) {
       newErrors.title = "Title is required";
     } else if (formData.title.length > 200) {
@@ -50,24 +50,27 @@ const CourseForm = ({ course, onSave, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     const courseData = {
       ...formData,
-      tags: formData.tags.split(",").map(tag => tag.trim()).filter(tag => tag),
+      tags: formData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag),
     };
 
     onSave(courseData);
   };
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -82,7 +85,9 @@ const CourseForm = ({ course, onSave, onCancel }) => {
                 {course ? "Edit Course" : "Create New Course"}
               </h3>
               <p className="text-sm text-gray-500 mt-1">
-                {course ? "Update your course information" : "Fill in the details to create your course"}
+                {course
+                  ? "Update your course information"
+                  : "Fill in the details to create your course"}
               </p>
             </div>
             <button
@@ -110,7 +115,9 @@ const CourseForm = ({ course, onSave, onCancel }) => {
               }`}
               placeholder="Enter course title..."
             />
-            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+            {errors.title && (
+              <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+            )}
           </div>
 
           {/* Description */}
@@ -127,7 +134,9 @@ const CourseForm = ({ course, onSave, onCancel }) => {
               }`}
               placeholder="Describe what students will learn..."
             />
-            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+            {errors.description && (
+              <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+            )}
           </div>
 
           {/* Image URL */}
@@ -144,8 +153,10 @@ const CourseForm = ({ course, onSave, onCancel }) => {
               }`}
               placeholder="https://example.com/image.jpg"
             />
-            {errors.imageUrl && <p className="text-red-500 text-sm mt-1">{errors.imageUrl}</p>}
-            
+            {errors.imageUrl && (
+              <p className="text-red-500 text-sm mt-1">{errors.imageUrl}</p>
+            )}
+
             {formData.imageUrl && !errors.imageUrl && (
               <div className="mt-3">
                 <p className="text-xs text-gray-500 mb-2">Preview:</p>
@@ -204,7 +215,9 @@ const CourseForm = ({ course, onSave, onCancel }) => {
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               placeholder="Enter tags separated by commas..."
             />
-            <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Separate multiple tags with commas
+            </p>
           </div>
 
           {/* Price and Duration */}
@@ -218,7 +231,9 @@ const CourseForm = ({ course, onSave, onCancel }) => {
                 min="0"
                 step="0.01"
                 value={formData.price}
-                onChange={(e) => handleChange("price", parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange("price", parseFloat(e.target.value) || 0)
+                }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
@@ -232,7 +247,12 @@ const CourseForm = ({ course, onSave, onCancel }) => {
                 min="0"
                 step="0.5"
                 value={formData.estimatedDuration}
-                onChange={(e) => handleChange("estimatedDuration", parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange(
+                    "estimatedDuration",
+                    parseFloat(e.target.value) || 0
+                  )
+                }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
@@ -260,4 +280,4 @@ const CourseForm = ({ course, onSave, onCancel }) => {
   );
 };
 
-export default CourseManagement;
+export default CourseForm;

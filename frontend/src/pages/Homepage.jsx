@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { getCourses } from "../api/api";
 import CourseCard from "../components/CourseCard";
@@ -53,7 +53,7 @@ const Homepage = () => {
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
@@ -69,16 +69,29 @@ const Homepage = () => {
               </span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Discover expertly crafted courses and accelerate your learning journey with our comprehensive platform
+              Discover expertly crafted courses and accelerate your learning
+              journey with our comprehensive platform
             </p>
           </div>
 
           {/* Feature Highlights */}
           <div className="flex justify-center gap-6 flex-wrap">
-            <FeatureBadge icon={Users} label="Expert Instructors" color="emerald" />
-            <FeatureBadge icon={BookOpen} label="Interactive Learning" color="violet" />
+            <FeatureBadge
+              icon={Users}
+              label="Expert Instructors"
+              color="emerald"
+            />
+            <FeatureBadge
+              icon={BookOpen}
+              label="Interactive Learning"
+              color="violet"
+            />
             <FeatureBadge icon={Award} label="Certificates" color="amber" />
-            <FeatureBadge icon={TrendingUp} label="Progress Tracking" color="blue" />
+            <FeatureBadge
+              icon={TrendingUp}
+              label="Progress Tracking"
+              color="blue"
+            />
           </div>
         </div>
       </section>
@@ -88,8 +101,10 @@ const Homepage = () => {
         <section className="py-8 px-6 bg-white/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Available Courses</h2>
-              
+              <h2 className="text-2xl font-bold text-gray-900">
+                Available Courses
+              </h2>
+
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                 <input
                   type="text"
@@ -98,10 +113,12 @@ const Homepage = () => {
                   onChange={(e) => handleFilterChange("search", e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
-                
+
                 <select
                   value={filters.category}
-                  onChange={(e) => handleFilterChange("category", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("category", e.target.value)
+                  }
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="all">All Categories</option>
@@ -110,10 +127,12 @@ const Homepage = () => {
                   <option value="Business">Business</option>
                   <option value="Marketing">Marketing</option>
                 </select>
-                
+
                 <select
                   value={filters.difficulty}
-                  onChange={(e) => handleFilterChange("difficulty", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("difficulty", e.target.value)
+                  }
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="all">All Levels</option>
@@ -159,7 +178,10 @@ const Homepage = () => {
           ) : loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl p-6 shadow-sm animate-pulse">
+                <div
+                  key={i}
+                  className="bg-white rounded-xl p-6 shadow-sm animate-pulse"
+                >
                   <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
                   <div className="h-4 bg-gray-200 rounded mb-2"></div>
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -184,7 +206,9 @@ const Homepage = () => {
                   No Courses Found
                 </h3>
                 <p className="text-gray-600">
-                  {filters.search || filters.category !== "all" || filters.difficulty !== "all"
+                  {filters.search ||
+                  filters.category !== "all" ||
+                  filters.difficulty !== "all"
                     ? "Try adjusting your filters to find more courses."
                     : "No courses are available yet. Check back later!"}
                 </p>
@@ -198,9 +222,21 @@ const Homepage = () => {
       <section className="py-16 px-6 bg-white/70 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <StatCard number="10K+" label="Active Learners" color="text-emerald-600" />
-            <StatCard number="500+" label="Expert Courses" color="text-blue-600" />
-            <StatCard number="95%" label="Success Rate" color="text-purple-600" />
+            <StatCard
+              number="10K+"
+              label="Active Learners"
+              color="text-emerald-600"
+            />
+            <StatCard
+              number="500+"
+              label="Expert Courses"
+              color="text-blue-600"
+            />
+            <StatCard
+              number="95%"
+              label="Success Rate"
+              color="text-purple-600"
+            />
             <StatCard number="24/7" label="Support" color="text-orange-600" />
           </div>
         </div>
@@ -218,7 +254,9 @@ const FeatureBadge = ({ icon: Icon, label, color }) => {
   };
 
   return (
-    <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border ${colorMap[color]}`}>
+    <div
+      className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border ${colorMap[color]}`}
+    >
       <Icon className="w-4 h-4" />
       {label}
     </div>
