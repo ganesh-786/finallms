@@ -65,7 +65,7 @@ const Homepage = () => {
             <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
               Welcome to{" "}
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                FinallMS
+                GyaanSathi
               </span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">

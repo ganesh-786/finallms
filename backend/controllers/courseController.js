@@ -1,3 +1,37 @@
+// Utility endpoint to publish all courses created by admin/manager (for migration)
+export const publishAllAdminManagerCourses = async (req, res) => {
+  try {
+    // Only allow admin to run this utility
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only admin can run this utility.",
+      });
+    }
+    // Find all users with admin or manager role
+    const adminManagers = await User.find(
+      { role: { $in: ["admin", "manager"] } },
+      { _id: 1 }
+    );
+    const adminManagerIds = adminManagers.map((u) => u._id);
+    // Update all their courses to published
+    const result = await Course.updateMany(
+      { createdBy: { $in: adminManagerIds } },
+      { $set: { isPublished: true } }
+    );
+    res.status(200).json({
+      success: true,
+      message: `Published ${result.modifiedCount} courses created by admin/manager.`,
+    });
+  } catch (error) {
+    console.error("Publish migration error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
 import Course from "../models/Course.js";
 import { User } from "../models/User.js";
 import { validationResult } from "express-validator";
@@ -49,7 +83,8 @@ export const createCourse = async (req, res) => {
       estimatedDuration: estimatedDuration || 0,
       lessons: [], // Initialize with empty lessons array
       createdBy: req.user._id,
-      isPublished: req.user.role === "admin" ? true : false, // Auto-publish for admins
+      isPublished:
+        req.user.role === "admin" || req.user.role === "manager" ? true : false, // Auto-publish for admin/manager
     });
 
     const savedCourse = await newCourse.save();
@@ -89,9 +124,13 @@ export const getAllCourses = async (req, res) => {
     // Role-based filtering
     if (req.user.role === "user") {
       // Regular users only see published courses or their enrolled courses
+      const mongoose = (await import("mongoose")).default;
+      const userObjectId = mongoose.Types.ObjectId.isValid(req.user._id)
+        ? new mongoose.Types.ObjectId(req.user._id)
+        : req.user._id;
       query.$or = [
         { isPublished: true },
-        { "enrolledUsers.user": req.user._id },
+        { "enrolledUsers.user": userObjectId },
       ];
     } else if (req.user.role === "manager") {
       // Managers see published courses and courses they created
@@ -113,26 +152,46 @@ export const getAllCourses = async (req, res) => {
       query.isPublished = published === "true";
     }
 
+    let selectFields =
+      "title description imageUrl category difficulty tags price estimatedDuration isPublished createdAt updatedAt enrolledCount lessons";
+    // Hide lessons for regular users unless enrolled
+    if (req.user.role === "user") {
+      selectFields =
+        "title description imageUrl category difficulty tags price estimatedDuration isPublished createdAt updatedAt enrolledCount";
+    }
     const courses = await Course.find(query)
-      .select(
-        "title description imageUrl category difficulty tags price estimatedDuration isPublished createdAt updatedAt enrolledCount"
-      )
+      .select(selectFields)
       .populate("createdBy", "username role")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await Course.countDocuments(query);
-
-    // Add enrollment status for current user
-    const coursesWithEnrollment = courses.map((course) => {
+    // For regular users, add lessons only if enrolled
+    let coursesWithEnrollment = courses.map((course) => {
       const courseObj = course.toObject();
       courseObj.isEnrolled = course.isUserEnrolled(req.user._id);
       courseObj.canEdit =
         req.user.role === "admin" ||
-        course.createdBy._id.toString() === req.user._id.toString();
+        course.createdBy._id?.toString() === req.user._id.toString();
+      // Only attach lessons if user is enrolled
+      if (req.user.role === "user" && courseObj.isEnrolled && course.lessons) {
+        courseObj.lessons = course.lessons;
+      }
       return courseObj;
     });
+    if (req.user.role !== "user") {
+      // For admin/manager, keep all lessons
+      coursesWithEnrollment = courses.map((course) => {
+        const courseObj = course.toObject();
+        courseObj.isEnrolled = course.isUserEnrolled(req.user._id);
+        courseObj.canEdit =
+          req.user.role === "admin" ||
+          course.createdBy._id?.toString() === req.user._id.toString();
+        return courseObj;
+      });
+    }
+
+    const total = await Course.countDocuments(query);
 
     res.status(200).json({
       success: true,

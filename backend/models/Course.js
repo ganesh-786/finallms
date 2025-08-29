@@ -172,8 +172,11 @@ courseSchema.virtual("enrolledCount").get(function () {
 
 // Method to check if user is enrolled
 courseSchema.methods.isUserEnrolled = function (userId) {
-  return this.enrolledUsers.some(
-    (enrollment) => enrollment.user.toString() === userId.toString()
+  return (
+    Array.isArray(this.enrolledUsers) &&
+    this.enrolledUsers.some(
+      (enrollment) => enrollment.user.toString() === userId.toString()
+    )
   );
 };
 
