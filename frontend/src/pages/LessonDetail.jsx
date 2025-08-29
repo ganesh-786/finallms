@@ -1,298 +1,255 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { getCourseById } from "../api/api";
+import toast from "react-hot-toast";
+import { ArrowLeft, Clock, ExternalLink, BookOpen, Tag } from "lucide-react";
 
-export function LessonDetailLightInitial({ lesson = {}, onBackToCourse }) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-sky-50 to-indigo-50 p-6 font-sans text-slate-900">
-      <div className="container mx-auto bg-white rounded-xl shadow-2xl p-8 lg:p-12 mb-8">
-        <button
-          onClick={onBackToCourse}
-          aria-label="Back to course"
-          className="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition duration-200 mb-6 font-semibold"
-        >
-          <svg
-            className="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+const LessonDetail = () => {
+  const { courseId, lessonId } = useParams();
+  const navigate = useNavigate();
+  const { token } = useContext(AuthContext);
+  const [course, setCourse] = useState(null);
+  const [lesson, setLesson] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCourseAndLesson();
+  }, [courseId, lessonId, token]);
+
+  const fetchCourseAndLesson = async () => {
+    try {
+      setLoading(true);
+      const response = await getCourseById(courseId, token);
+      if (response.success) {
+        setCourse(response.data);
+        const foundLesson = response.data.lessons?.find(l => l.id === lessonId);
+        if (foundLesson) {
+          setLesson(foundLesson);
+        } else {
+          toast.error("Lesson not found");
+          navigate(`/courses/${courseId}`);
+        }
+      } else {
+        toast.error("Course not found");
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Failed to fetch lesson:", error);
+      toast.error("Failed to load lesson details");
+      navigate("/");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!lesson || !course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Lesson Not Found</h2>
+          <button
+            onClick={() => navigate(`/courses/${courseId}`)}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          Back to Course
-        </button>
+            Back to Course
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-        <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-6">
-          {lesson.title}
-        </h1>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-indigo-50">
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Navigation */}
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={() => navigate(`/courses/${courseId}`)}
+            className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Course
+          </button>
+          
+          <div className="text-sm text-gray-500">
+            <span className="font-medium">{course.title}</span>
+            <span className="mx-2">•</span>
+            <span>{lesson.title}</span>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-12">
-          {/* Materials */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Materials</h2>
-            {lesson.materials && lesson.materials.length > 0 ? (
-              <ul className="list-disc list-inside space-y-2 text-gray-700">
-                {lesson.materials.map((material, index) => (
-                  <li key={index} className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-1"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
+        {/* Lesson Content */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          {/* Lesson Header */}
+          <div className="p-8 border-b border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+                {lesson.title}
+              </h1>
+              
+              {lesson.duration && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
+                  <Clock className="w-4 h-4" />
+                  <span>{lesson.duration} minutes</span>
+                </div>
+              )}
+            </div>
+
+            {/* Lesson Meta */}
+            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+              {lesson.subjectCategory && (
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  <span>{lesson.subjectCategory}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Topics */}
+            {lesson.topics && lesson.topics.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Topics Covered:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {lesson.topics.map((topic, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium"
                     >
-                      <path
-                        fillRule="evenodd"
-                        d="M4 4a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-3a1 1 0 100 2h.01a1 1 0 100-2H7z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {material.startsWith("http") ? (
-                      <a
-                        href={material}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        {material}
-                      </a>
-                    ) : (
-                      <span>{material}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-600 italic">
-                No materials provided for this lesson.
-              </p>
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Topics */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Topics</h2>
-            {lesson.topics && lesson.topics.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {lesson.topics.map((topic, index) => (
-                  <span
+          {/* Video Section */}
+          {lesson.videoUrl && (
+            <div className="p-8 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Lesson Video</h3>
+              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                <iframe
+                  src={lesson.videoUrl}
+                  title={lesson.title}
+                  className="w-full h-full"
+                  allowFullScreen
+                  onError={() => {
+                    toast.error("Failed to load video");
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Materials Section */}
+          {lesson.materials && lesson.materials.length > 0 && (
+            <div className="p-8 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-indigo-600" />
+                Learning Materials
+              </h3>
+              <div className="space-y-3">
+                {lesson.materials.map((material, index) => (
+                  <div
                     key={index}
-                    className="bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full"
+                    className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100"
                   >
-                    {topic}
-                  </span>
+                    <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium">
+                      {index + 1}
+                    </div>
+                    <div className="flex-grow">
+                      {material.startsWith('http') ? (
+                        <a
+                          href={material}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-600 hover:text-indigo-800 transition-colors font-medium flex items-center gap-2"
+                        >
+                          <span className="truncate">{material}</span>
+                          <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-gray-700 font-medium">{material}</span>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Lesson Content */}
+          <div className="p-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Lesson Content</h3>
+            {lesson.content ? (
+              <div className="prose prose-lg max-w-none">
+                <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {lesson.content}
+                </div>
+              </div>
             ) : (
-              <p className="text-gray-600 italic">
-                No topics specified for this lesson.
-              </p>
+              <div className="text-center py-8">
+                <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">
+                  No additional content available for this lesson.
+                </p>
+              </div>
             )}
-            <p className="text-lg text-gray-700 mt-4">
-              <span className="font-semibold">Subject Category:</span>{" "}
-              {lesson.subjectCategory || "N/A"}
-            </p>
           </div>
         </div>
 
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Lesson Content
-          </h2>
-          {lesson.content ? (
-            <div className="prose prose-lg max-w-none">
-              <p className="text-lg text-gray-800 leading-relaxed mb-6 whitespace-pre-wrap">
-                {lesson.content}
-              </p>
-            </div>
-          ) : (
-            <p className="text-gray-600 italic">
-              No content available for this lesson.
-            </p>
-          )}
-        </div>
+        {/* Navigation to Next/Previous Lessons */}
+        {course.lessons && course.lessons.length > 1 && (
+          <div className="mt-8 flex justify-between">
+            {(() => {
+              const currentIndex = course.lessons.findIndex(l => l.id === lessonId);
+              const prevLesson = currentIndex > 0 ? course.lessons[currentIndex - 1] : null;
+              const nextLesson = currentIndex < course.lessons.length - 1 ? course.lessons[currentIndex + 1] : null;
+
+              return (
+                <>
+                  <div>
+                    {prevLesson && (
+                      <button
+                        onClick={() => navigate(`/courses/${courseId}/lessons/${prevLesson.id}`)}
+                        className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        Previous: {prevLesson.title}
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div>
+                    {nextLesson && (
+                      <button
+                        onClick={() => navigate(`/courses/${courseId}/lessons/${nextLesson.id}`)}
+                        className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
+                      >
+                        Next: {nextLesson.title}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
 
-function IconBack({ className = "w-5 h-5 mr-2" }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M10 19l-7-7m0 0l7-7m-7 7h18"
-      />
-    </svg>
-  );
-}
-
-function Badge({ children }) {
-  return (
-    <span className="bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full shadow-sm">
-      {children}
-    </span>
-  );
-}
-
-function MaterialItem({ material }) {
-  const isUrl = typeof material === "string" && material.startsWith("http");
-  const label = isUrl ? material.replace(/^https?:\/\//, "") : material;
-  return (
-    <li className="flex items-start">
-      <svg
-        className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-1"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-        aria-hidden
-      >
-        <path
-          fillRule="evenodd"
-          d="M4 4a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-3a1 1 0 100 2h.01a1 1 0 100-2H7z"
-          clipRule="evenodd"
-        />
-      </svg>
-      {isUrl ? (
-        <a
-          href={material}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline break-words max-w-[30rem] truncate block"
-          title={material}
-        >
-          {label}
-        </a>
-      ) : (
-        <span className="text-gray-800">{material}</span>
-      )}
-    </li>
-  );
-}
-
-export default function LessonDetail({ lesson = {}, onBackToCourse }) {
-  // Safe defaults
-  const {
-    title = "Untitled Lesson",
-    materials = [],
-    topics = [],
-    subjectCategory = "N/A",
-    content = "",
-  } = lesson || {};
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-sky-50 to-indigo-50 p-6 font-sans text-slate-900">
-      <main
-        className="container mx-auto bg-white rounded-xl shadow-lg p-6 lg:p-10 mb-8"
-        aria-labelledby="lesson-title"
-      >
-        <button
-          onClick={onBackToCourse}
-          aria-label="Back to course"
-          className="inline-flex items-center text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-200 rounded mb-6 font-semibold"
-        >
-          <IconBack />
-          Back to Course
-        </button>
-
-        <h1
-          id="lesson-title"
-          className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4"
-        >
-          {title}
-        </h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <section aria-labelledby="materials-heading">
-            <h2
-              id="materials-heading"
-              className="text-2xl font-semibold text-slate-800 mb-3"
-            >
-              Materials
-            </h2>
-            {materials && materials.length > 0 ? (
-              <ul className="list-none space-y-3 text-gray-700">
-                {materials.map((m, i) => (
-                  <MaterialItem key={i} material={m} />
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-600 italic">
-                No materials provided for this lesson.
-              </p>
-            )}
-          </section>
-
-          <aside aria-labelledby="topics-heading">
-            <h2
-              id="topics-heading"
-              className="text-2xl font-semibold text-slate-800 mb-3"
-            >
-              Topics
-            </h2>
-            {topics && topics.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {topics.map((topic, i) => (
-                  <Badge key={i}>{topic}</Badge>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600 italic">
-                No topics specified for this lesson.
-              </p>
-            )}
-
-            <div className="mt-6 text-lg text-gray-700">
-              <span className="font-semibold">Subject Category:</span>{" "}
-              {subjectCategory}
-            </div>
-          </aside>
-        </div>
-
-        <article aria-labelledby="content-heading">
-          <h2
-            id="content-heading"
-            className="text-2xl font-semibold text-slate-800 mb-4"
-          >
-            Lesson Content
-          </h2>
-
-          {content ? (
-            <div className="prose prose-lg max-w-none">
-              {/* preserve new lines */}
-              {content.split("\n\n").map((block, idx) => (
-                <p
-                  key={idx}
-                  className="text-lg text-slate-800 leading-relaxed whitespace-pre-wrap"
-                >
-                  {block}
-                </p>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-600 italic">
-              No content available for this lesson.
-            </p>
-          )}
-        </article>
-
-        <footer className="mt-8 text-sm text-gray-600">
-          <div>© {new Date().getFullYear()} Learning Platform</div>
-          <div className="mt-1">
-            Need to edit this lesson? Visit the Manage Content section.
-          </div>
-        </footer>
-      </main>
-    </div>
-  );
-}
+export default LessonDetail;
